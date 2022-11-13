@@ -4,23 +4,33 @@ import os
 
 app = Flask(__name__)
 
-model = torch.hub.load('./yolov5', 'custom', './models/pepper_napacabbage_bean/best.pt', source='local')
-
-
-@app.route('/diagnose', methods=['POST'])
-def predict():
+@app.route('/diagnose/<crop>', methods=['POST'])
+def predict(crop):
     file = request.files['file']
     file.save('./temp/' + file.filename)
     predict_img = './temp/' + file.filename
 
-    temp = model(predict_img)
+    if crop == 'bean' or crop == 'pepper':
+        model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean/best.pt', source='local')
+    else:
+        # TODO: 모델 변경하기
+        model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean/best.pt', source='local')
+
+    temp = model(predict_img, size=320)
     temp.save()
     result = temp.pandas().xyxy[0]
 
     diseases = []
+    disease_kind = {}
     for i in range(len(result)):
+        if result['name'][i] not in disease_kind:
+            disease_kind[result['name'][i]] = result['confidence'][i]
+        else:
+            disease_kind[result['name'][i]] = max(result['confidence'][i], disease_kind[result['name'][i]])
+
+    for disease in disease_kind:
         diseases.append({
-            'name': result['name'][i], 'confidence': result['confidence'][i]
+            'name': disease, 'confidence': disease_kind[disease]
         })
 
     res = {
