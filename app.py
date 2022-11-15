@@ -4,6 +4,7 @@ import os
 
 app = Flask(__name__)
 
+
 @app.route('/diagnose/<crop>', methods=['POST'])
 def predict(crop):
     file = request.files['file']
@@ -14,7 +15,7 @@ def predict(crop):
         model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean_napacabbage/best.pt', source='local')
     else:
         # TODO: 모델 변경하기
-        model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean/best.pt', source='local')
+        model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean_napacabbage/best.pt', source='local')
 
     temp = model(predict_img, size=320)
     temp.save()
