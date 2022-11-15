@@ -10,8 +10,8 @@ def predict(crop):
     file.save('./temp/' + file.filename)
     predict_img = './temp/' + file.filename
 
-    if crop == 'bean' or crop == 'pepper':
-        model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean/best.pt', source='local')
+    if crop == 'pepper' or crop == 'bean' or crop == 'napa_cabbage':
+        model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean_napacabbage/best.pt', source='local')
     else:
         # TODO: 모델 변경하기
         model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean/best.pt', source='local')
