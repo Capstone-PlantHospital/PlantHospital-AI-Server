@@ -16,3 +16,22 @@ def s3_connection():
         return s3
 
 
+def s3_put_object(s3, bucket, filepath, access_key):
+    try:
+        s3.upload_file(
+            Filename=filepath,
+            Bucket=bucket,
+            Key=access_key,
+            ExtraArgs={"ContentType": "image/jpg", "ACL": "public-read"},
+        )
+    except Exception as e:
+        print(e)
+        return False
+
+    return True
+
+
+def s3_get_image_url(s3, filename):
+    location = s3.get_bucket_location(Bucket="planthospital")["LocationConstraint"]
+
+    return f"https://planthospital.s3.{location}.amazonaws.com/{filename}.jpg"
