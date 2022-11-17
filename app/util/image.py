@@ -1,5 +1,19 @@
 import boto3
 import os
+from datetime import datetime
+
+
+def upload_file(filename, BUCKET):
+    result_file_name = filename.split('.')[0]
+    result_file_path = "./runs/detect/exp/{}.jpg".format(result_file_name)
+    unique_file_name = result_file_name + '_' + datetime.now().strftime("%Y%m%d%H%M%S.%f")
+    img_url = ""
+
+    s3 = s3_connection()
+    if s3_put_object(s3, BUCKET, result_file_path, unique_file_name + '.jpg'):
+        img_url = s3_get_image_url(s3, unique_file_name)
+
+    return img_url
 
 
 def s3_connection():
