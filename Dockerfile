@@ -5,12 +5,16 @@ RUN git clone https://github.com/Capstone-PlantHospital/PlantHospital-AI-Server.
 WORKDIR /PlantHospital-AI-Server/
 
 RUN git clone https://github.com/ultralytics/yolov5
+RUN mkdir -p /PlantHospital-AI-Server/temp
 
 WORKDIR /PlantHospital-AI-Server/yolov5
-RUN pip install -qr requirements.txt flask torch
+
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+RUN pip install -qr requirements.txt flask torch boto3
 
 WORKDIR /PlantHospital-AI-Server
 
 EXPOSE 5000
 
-ENTRYPOINT ["python", "app.py"]
+ENTRYPOINT ["nohup", "python", "app.py", "&"]
