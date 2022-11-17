@@ -11,7 +11,7 @@ def upload_file(filename, BUCKET):
 
     s3 = s3_connection()
     if s3_put_object(s3, BUCKET, result_file_path, unique_file_name + '.jpg'):
-        img_url = s3_get_image_url(s3, unique_file_name)
+        img_url = s3_get_image_url(s3, BUCKET, unique_file_name)
 
     return img_url
 
@@ -45,7 +45,7 @@ def s3_put_object(s3, bucket, filepath, access_key):
     return True
 
 
-def s3_get_image_url(s3, filename):
-    location = s3.get_bucket_location(Bucket="planthospital")["LocationConstraint"]
+def s3_get_image_url(s3, BUCKET, filename):
+    location = s3.get_bucket_location(Bucket=BUCKET)["LocationConstraint"]
 
     return f"https://planthospital.s3.{location}.amazonaws.com/{filename}.jpg"
