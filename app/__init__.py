@@ -1,10 +1,7 @@
 from flask import Flask
+from .controller import diagnose_controller
 
 
-def create_app():
-    app = Flask(__name__)
+app = Flask(__name__)
 
-    from .controller import diagnose_controller
-    app.register_blueprint(diagnose_controller.bp)
-
-    return app
+app.register_blueprint(diagnose_controller.bp)

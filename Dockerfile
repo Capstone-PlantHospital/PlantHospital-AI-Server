@@ -17,4 +17,4 @@ WORKDIR /PlantHospital-AI-Server
 
 EXPOSE 5000
 
-ENTRYPOINT ["nohup", "flask", "run", "--host=0.0.0.0", "--port=5000", "&"]
+ENTRYPOINT ["nohup", "python", "app.py", "&"]
