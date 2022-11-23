@@ -1,13 +1,15 @@
 import os
 import shutil
+import cv2
 import torch
+from efficientnet_pytorch import EfficientNet
 from ..util.image import upload_file
 
 
 class DiagnoseService:
-    def predict(self, crop, file):
-        BUCKET = "planthospital"
+    BUCKET = "planthospital"
 
+    def predict(self, crop, file):
         file.save('./temp/' + file.filename)
         predict_img = './temp/' + file.filename
 
@@ -15,14 +17,31 @@ class DiagnoseService:
             # model = torch.hub.load('ultralytics/yolov5', 'custom', './models/pepper_bean_napacabbage/best.pt', device='cpu')
             model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean_napacabbage/best.pt',
                                    source='local', device='cpu')
-        else:
-            # TODO:모델 변경하기
-            model = torch.hub.load('./yolov5', 'custom', './models/pepper_bean_napacabbage/best.pt',
-                                   source='local', device='cpu')
 
-        temp = model(predict_img, size=320)
-        temp.save()
-        result = temp.pandas().xyxy[0]
+            diseases, img_url = self.yolov5_model(model, file, predict_img)
+        else:
+            model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=7)
+            device = torch.device('cpu')
+            model.load_state_dict(torch.load('./models/radish_onion/crop_model.pt', map_location=device))
+            model.eval()
+
+            diseases, img_url = self.efficientnet_model(model, file, predict_img)
+
+        res = {
+            'diseases': diseases,
+            'img_url': img_url
+        }
+
+        os.remove('./temp/' + file.filename)
+        if os.path.isdir('./runs/detect'):
+            shutil.rmtree('./runs/detect')
+
+        return res
+
+    def yolov5_model(self, model, file, predict_img):
+        output = model(predict_img, size=320)
+        output.save()
+        result = output.pandas().xyxy[0]
 
         diseases = []
         disease_kind = {}
@@ -37,15 +56,29 @@ class DiagnoseService:
                 'name': disease, 'confidence': disease_kind[disease]
             })
 
-        img_url = upload_file(file.filename, BUCKET)
+        img_url = upload_file(file.filename, self.BUCKET)
 
-        res = {
-            'diseases': diseases,
-            'img_url': img_url
+        return diseases, img_url
+
+    def efficientnet_model(self, model, file, predict_img):
+        crop_disease = {
+            0: 'green_onion_normal', 1: 'green_onion_purple_blotch', 2: 'green_onion_downy_mildew',
+            3: 'green_onion_rust', 4: 'radish_normal', 5: 'radish_black_spot', 6: 'radish_downy_mildew'
         }
+        diseases = []
 
-        os.remove('./temp/' + file.filename)
-        shutil.rmtree('./runs/detect')
+        img = cv2.imread(predict_img)
+        img = cv2.resize(img, (224, 224))
+        img = img[:, :, ::-1].transpose((2, 0, 1)).copy()
+        img = torch.from_numpy(img).float().div(255.0).unsqueeze(0)
 
-        return res
+        output = model(img)
+        _, predict = torch.max(output, 1)
 
+        diseases.append({
+            'name': crop_disease[predict.item()], 'confidence': -1
+        })
+
+        img_url = upload_file(file.filename, self.BUCKET, 2)
+
+        return diseases, img_url
