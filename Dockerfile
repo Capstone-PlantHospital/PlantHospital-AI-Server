@@ -11,7 +11,7 @@ WORKDIR /PlantHospital-AI-Server/yolov5
 
 RUN apt-get update
 RUN apt-get install ffmpeg libsm6 libxext6  -y
-RUN pip install -qr requirements.txt flask torch boto3
+RUN pip install -qr requirements.txt flask torch boto3 efficientnet_pytorch opencv-python
 
 WORKDIR /PlantHospital-AI-Server
 
