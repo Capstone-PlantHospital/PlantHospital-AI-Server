@@ -3,9 +3,12 @@ import os
 from datetime import datetime
 
 
-def upload_file(filename, BUCKET):
+def upload_file(filename, BUCKET, crop=1):
     result_file_name = filename.split('.')[0]
     result_file_path = "./runs/detect/exp/{}.jpg".format(result_file_name)
+    # radish, green_onion
+    if crop == 2:
+        result_file_path = './temp/{}'.format(filename)
     unique_file_name = result_file_name + '_' + datetime.now().strftime("%Y%m%d%H%M%S.%f")
     img_url = ""
 
