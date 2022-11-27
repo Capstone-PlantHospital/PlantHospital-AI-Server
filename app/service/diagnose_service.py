@@ -22,7 +22,7 @@ class DiagnoseService:
         else:
             model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=7)
             device = torch.device('cpu')
-            model.load_state_dict(torch.load('./models/radish_onion/crop_model.pt', map_location=device))
+            model.load_state_dict(torch.load('./models/radish_greenonion/crop_model.pt', map_location=device))
             model.eval()
 
             diseases, img_url = self.efficientnet_model(model, file, predict_img)
